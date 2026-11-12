@@ -2,6 +2,66 @@
 
 {% block title %}ExpenseTrack — Track Every Rupee{% endblock %}
 
+{% block head %}
+<style>
+    button.btn-hero { border: none; cursor: pointer; }
+
+    .video-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        background: rgba(15, 15, 15, 0.7);
+    }
+    .video-modal.is-open { display: flex; }
+
+    .video-modal-dialog {
+        position: relative;
+        width: 100%;
+        max-width: 860px;
+        background: var(--paper-card);
+        border-radius: var(--radius-lg);
+        padding: 1rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .video-modal-close {
+        position: absolute;
+        top: -0.9rem;
+        right: -0.9rem;
+        width: 2.2rem;
+        height: 2.2rem;
+        border: 1px solid var(--border);
+        border-radius: 50%;
+        background: var(--paper-card);
+        color: var(--ink);
+        font-size: 1.3rem;
+        line-height: 1;
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+    }
+    .video-modal-close:hover { background: var(--ink); color: var(--paper); }
+
+    .video-modal-frame {
+        position: relative;
+        aspect-ratio: 16 / 9;
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        background: var(--ink);
+    }
+    .video-modal-frame iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 
 <section class="hero">
@@ -17,7 +77,7 @@
         </p>
         <div class="hero-actions">
             <a href="{{ url_for('register') }}" class="btn-hero">Create free account</a>
-            <a href="#" class="btn-hero">See how it works</a>
+            <button type="button" class="btn-hero" id="open-video-modal" aria-haspopup="dialog">See how it works</button>
         </div>
     </div>
     <div class="hero-visual">
@@ -90,4 +150,71 @@
     </div>
 </section>
 
+<div class="video-modal" id="video-modal" role="dialog" aria-modal="true" aria-label="How ExpenseTrack works" aria-hidden="true">
+    <div class="video-modal-dialog">
+        <button type="button" class="video-modal-close" id="close-video-modal" aria-label="Close video">&times;</button>
+        <div class="video-modal-frame">
+            <iframe id="video-modal-iframe"
+                    title="How ExpenseTrack works"
+                    src=""
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen></iframe>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    (function () {
+        // Paste any YouTube link here (share link, watch link or embed link).
+        var VIDEO_URL = "https://youtu.be/oj7KHCX_Ngo?si=raZUEvSn4uPBpfSz";
+
+        // Pull the video id out of any common YouTube URL format.
+        function getVideoId(url) {
+            var match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))([\w-]{11})/);
+            return match ? match[1] : null;
+        }
+
+        var VIDEO_ID = getVideoId(VIDEO_URL);
+
+        var modal = document.getElementById("video-modal");
+        var iframe = document.getElementById("video-modal-iframe");
+        var openBtn = document.getElementById("open-video-modal");
+        var closeBtn = document.getElementById("close-video-modal");
+
+        function openModal() {
+            // Setting src on open starts the video; clearing it on close stops it.
+            if (VIDEO_ID) {
+                iframe.src = "https://www.youtube.com/embed/" + VIDEO_ID + "?autoplay=1&rel=0";
+            }
+            modal.classList.add("is-open");
+            modal.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+            closeBtn.focus();
+        }
+
+        function closeModal() {
+            modal.classList.remove("is-open");
+            modal.setAttribute("aria-hidden", "true");
+            iframe.src = "";
+            document.body.style.overflow = "";
+            openBtn.focus();
+        }
+
+        openBtn.addEventListener("click", openModal);
+        closeBtn.addEventListener("click", closeModal);
+
+        // Click on the dark backdrop (but not the dialog itself) closes the modal.
+        modal.addEventListener("click", function (e) {
+            if (e.target === modal) closeModal();
+        });
+
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+        });
+    })();
+</script>
 {% endblock %}
