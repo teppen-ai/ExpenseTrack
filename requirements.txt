@@ -1,5 +1,7 @@
+argon2-cffi==25.1.0
 fastapi==0.162.5
 httpx==0.28.1
+pwdlib[argon2]==0.3.1
 pydantic==2.14.3
 pytest==9.2.0
 uvicorn==0.54.0
