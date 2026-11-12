@@ -28,6 +28,11 @@ def login(request: Request):
     return templates.TemplateResponse(request, "login.html")
 
 
+@app.get("/terms", response_class=HTMLResponse)
+def terms(request: Request):
+    return templates.TemplateResponse(request, "terms.html")
+
+
 # ------------------------------------------------------------------ #
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #
