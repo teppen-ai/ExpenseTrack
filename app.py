@@ -1,11 +1,21 @@
+import sqlite3
 from contextlib import asynccontextmanager
+from urllib.parse import parse_qs
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from database.db import get_db, init_db, seed_db  # noqa: F401
+from database.db import (  # noqa: F401
+    create_user,
+    get_db,
+    get_user_by_email,
+    init_db,
+    seed_db,
+)
+
+MIN_PASSWORD_LENGTH = 8
 
 
 @asynccontextmanager
@@ -33,6 +43,55 @@ def landing(request: Request):
 @app.get("/register", response_class=HTMLResponse)
 def register(request: Request):
     return templates.TemplateResponse(request, "register.html")
+
+
+def _validate_registration(name, email, password, confirm_password):
+    """Return an error message for invalid registration input, else None."""
+    if not name:
+        return "Please enter your name."
+    local, _, domain = email.partition("@")
+    if (
+        email.count("@") != 1
+        or not local
+        or not domain
+        or any(ch.isspace() for ch in email)
+    ):
+        return "Please enter a valid email address."
+    if len(password) < MIN_PASSWORD_LENGTH:
+        return f"Password must be at least {MIN_PASSWORD_LENGTH} characters."
+    if password != confirm_password:
+        return "Passwords do not match."
+    return None
+
+
+@app.post("/register", response_class=HTMLResponse)
+async def register_post(request: Request):
+    # python-multipart is not installed, so parse the urlencoded body by hand.
+    raw = (await request.body()).decode("utf-8", errors="replace")
+    data = parse_qs(raw, keep_blank_values=True)
+    name = data.get("name", [""])[0].strip()
+    email = data.get("email", [""])[0].strip().lower()
+    password = data.get("password", [""])[0]
+    confirm_password = data.get("confirm_password", [""])[0]
+
+    error = _validate_registration(name, email, password, confirm_password)
+    if error is None:
+        if get_user_by_email(email):
+            error = "An account with that email already exists."
+        else:
+            try:
+                create_user(name, email, password)
+            except sqlite3.IntegrityError:
+                error = "An account with that email already exists."
+
+    if error:
+        return templates.TemplateResponse(
+            request,
+            "register.html",
+            {"error": error, "name": name, "email": email},
+            status_code=400,
+        )
+    return RedirectResponse(request.url_for("login").path, status_code=303)
 
 
 @app.get("/login", response_class=HTMLResponse)

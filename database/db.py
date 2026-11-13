@@ -91,3 +91,26 @@ def seed_db():
                 for day, amount, category, description in samples
             ],
         )
+
+
+def get_user_by_email(email):
+    """Return the user row for an email (case-insensitive), or None."""
+    with closing(get_db()) as conn:
+        return conn.execute(
+            "SELECT * FROM users WHERE email = ?",
+            (email.strip().lower(),),
+        ).fetchone()
+
+
+def create_user(name, email, password):
+    """Insert a new user with a hashed password and return the new id.
+
+    Raises sqlite3.IntegrityError if the email is already registered.
+    """
+    password_hash = PasswordHash.recommended().hash(password)
+    with closing(get_db()) as conn, conn:
+        cursor = conn.execute(
+            "INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)",
+            (name.strip(), email.strip().lower(), password_hash),
+        )
+        return cursor.lastrowid
