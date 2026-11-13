@@ -11,20 +11,6 @@ ROOT = Path(__file__).resolve().parent.parent
 DUPLICATE_ERROR = "already exists"
 
 
-@pytest.fixture
-def temp_db(tmp_path, monkeypatch):
-    monkeypatch.setattr(db, "DB_PATH", tmp_path / "test.db")
-    return db.DB_PATH
-
-
-@pytest.fixture
-def client(temp_db):
-    from app import app  # imported after DB_PATH is patched
-
-    with TestClient(app, follow_redirects=False) as test_client:
-        yield test_client
-
-
 def _query(sql, params=()):
     conn = db.get_db()
     try:

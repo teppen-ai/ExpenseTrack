@@ -102,6 +102,32 @@ def get_user_by_email(email):
         ).fetchone()
 
 
+def get_user_by_id(user_id):
+    """Return the user row for an id, or None."""
+    with closing(get_db()) as conn:
+        return conn.execute(
+            "SELECT * FROM users WHERE id = ?",
+            (user_id,),
+        ).fetchone()
+
+
+_password_hasher = PasswordHash.recommended()
+# Verified against when the email is unknown so response time does not
+# reveal whether an account exists.
+_DUMMY_HASH = _password_hasher.hash("not-a-real-password")
+
+
+def verify_user(email, password):
+    """Return the user row if email/password match, else None."""
+    user = get_user_by_email(email)
+    if user is None:
+        _password_hasher.verify(password, _DUMMY_HASH)
+        return None
+    if not _password_hasher.verify(password, user["password_hash"]):
+        return None
+    return user
+
+
 def create_user(name, email, password):
     """Insert a new user with a hashed password and return the new id.
 
