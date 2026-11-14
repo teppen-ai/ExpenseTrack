@@ -25,7 +25,7 @@ def test_get_login_renders_form(client):
 def test_login_success_sets_httponly_cookie(client):
     response = _login(client)
     assert response.status_code == 303
-    assert response.headers["location"] == "/"
+    assert response.headers["location"] == "/profile"
     set_cookie = response.headers["set-cookie"].lower()
     assert "session=" in set_cookie
     assert "httponly" in set_cookie
@@ -128,7 +128,9 @@ def test_cookie_for_missing_user_is_logged_out(client):
 
 
 def test_other_stubs_unchanged(client):
-    assert client.get("/profile").text == "Profile page — coming in Step 4"
+    profile = client.get("/profile")
+    assert profile.status_code == 303
+    assert profile.headers["location"] == "/login"
     logout = client.get("/logout")
     assert logout.status_code == 303
     assert "coming in Step 3" not in logout.text
