@@ -4,6 +4,7 @@
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', path='css/profile.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', path='css/date-filter.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -16,6 +17,27 @@
             <p class="profile-email">{{ profile_user.email }}</p>
             <p class="profile-since">Member since {{ profile_user.member_since }}</p>
         </div>
+    </section>
+
+    <section class="profile-filter" aria-label="Filter by date">
+        <div class="filter-bar">
+            <div class="filter-presets">
+                <a class="filter-pill{{ ' filter-pill--active' if not filters.active and not filters.error }}" href="{{ url_for('profile') }}">All Time</a>
+                {% for p in filters.presets %}
+                <a class="filter-pill{{ ' filter-pill--active' if p.active }}" href="{{ url_for('profile').include_query_params(start=p.start, end=p.end) }}">{{ p.label }}</a>
+                {% endfor %}
+            </div>
+            <span class="filter-divider" aria-hidden="true"></span>
+            <form class="filter-form" method="get" action="{{ url_for('profile') }}">
+                <input class="filter-date" type="date" name="start" value="{{ filters.start_input }}" aria-label="From date">
+                <span class="filter-to">to</span>
+                <input class="filter-date" type="date" name="end" value="{{ filters.end_input }}" aria-label="To date">
+                <button type="submit" class="filter-apply">Apply</button>
+            </form>
+        </div>
+        {% if filters.error %}
+        <p class="filter-error" role="alert">{{ filters.error }}</p>
+        {% endif %}
     </section>
 
     <section class="profile-stats" aria-label="Summary">
@@ -35,7 +57,7 @@
 
     <div class="profile-columns">
     <section class="profile-section">
-        <h2 class="profile-heading">Recent transactions</h2>
+        <h2 class="profile-heading">{{ "Transactions" if filters.active else "Recent transactions" }}</h2>
         <div class="table-wrap">
             <table class="profile-table">
                 <thead>
@@ -55,7 +77,7 @@
                         <td class="amount">₹{{ "{:,.2f}".format(t.amount) }}</td>
                     </tr>
                     {% else %}
-                    <tr><td colspan="4" class="empty-state">No transactions yet.</td></tr>
+                    <tr><td colspan="4" class="empty-state">{{ "No transactions in this range." if filters.active else "No transactions yet." }}</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -73,7 +95,7 @@
                 <span class="breakdown-pct">{{ c.percent }}%</span>
             </li>
             {% else %}
-            <li class="breakdown-empty">No spending yet.</li>
+            <li class="breakdown-empty">{{ "No spending in this range." if filters.active else "No spending yet." }}</li>
             {% endfor %}
         </ul>
     </section>
