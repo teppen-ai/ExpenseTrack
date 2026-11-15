@@ -16,6 +16,7 @@ from database.db import (  # noqa: F401
     seed_db,
     verify_user,
 )
+from database.date_range import resolve_date_filter
 from database.queries import (
     get_category_breakdown,
     get_profile_user,
@@ -163,7 +164,9 @@ def privacy(request: Request):
 
 
 @app.get("/profile", response_class=HTMLResponse)
-def profile(request: Request):
+def profile(
+    request: Request, start: str | None = None, end: str | None = None
+):
     user = get_current_user(request)
     if not user:
         return RedirectResponse(request.url_for("login").path, status_code=303)
@@ -172,14 +175,17 @@ def profile(request: Request):
         response = RedirectResponse(request.url_for("login").path, status_code=303)
         clear_session_cookie(response)
         return response
+    filters = resolve_date_filter(start, end)
+    date_range = {"start": filters["start"], "end": filters["end"]}
     return templates.TemplateResponse(
         request,
         "profile.html",
         {
             "profile_user": profile_user,
-            "stats": get_summary_stats(user["id"]),
-            "transactions": get_recent_transactions(user["id"]),
-            "breakdown": get_category_breakdown(user["id"]),
+            "filters": filters,
+            "stats": get_summary_stats(user["id"], **date_range),
+            "transactions": get_recent_transactions(user["id"], **date_range),
+            "breakdown": get_category_breakdown(user["id"], **date_range),
         },
     )
 
