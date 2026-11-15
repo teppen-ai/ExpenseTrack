@@ -50,10 +50,12 @@
                     {% for t in transactions %}
                     <tr>
                         <td><time datetime="{{ t.date }}">{{ t.date }}</time></td>
-                        <td>{{ t.description }}</td>
+                        <td>{{ t.description or "—" }}</td>
                         <td><span class="badge badge--{{ t.category|lower }}">{{ t.category }}</span></td>
                         <td class="amount">₹{{ "{:,.2f}".format(t.amount) }}</td>
                     </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="empty-state">No transactions yet.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -70,6 +72,8 @@
                 <progress class="breakdown-bar" value="{{ c.percent }}" max="100">{{ c.percent }}%</progress>
                 <span class="breakdown-pct">{{ c.percent }}%</span>
             </li>
+            {% else %}
+            <li class="breakdown-empty">No spending yet.</li>
             {% endfor %}
         </ul>
     </section>

@@ -11,7 +11,8 @@ ExpenseTrack is a lightweight personal expense tracker built with FastAPI and SQ
 expense-tracker/
 ├── app.py              # All routes — single file, no blueprints
 ├── database/
-│   └── db.py           # SQLite helpers: get_db(), init_db(), seed_db()
+│   ├── db.py           # SQLite helpers: get_db(), init_db(), seed_db(), user helpers
+│   └── queries.py      # Read-only profile-page queries (stats, transactions, breakdown)
 ├── templates/
 │   ├── base.html       # Shared layout — all templates must extend this
 │   └── *.html          # One template per page
@@ -26,7 +27,7 @@ expense-tracker/
 
 **Where things belong:**
 - New routes → `app.py` only, no blueprints
-- DB logic → `database/db.py` only, never inline in routes
+- DB logic → `database/db.py` (or `database/queries.py` for read-only query helpers), never inline in routes
 - New pages → new `.html` file extending `base.html`
 - Page-specific styles → new `.css` file, not inline `<style>` tags
 
@@ -71,7 +72,7 @@ source .venv\Scripts\activate         # MacOS: venv/bin/activate
 pip install -r requirements.txt
 
 # Run dev server (port 8001)
-uvicorn app:app --relaod --port 8001
+uvicorn app:app --reload --port 8001
 
 # Run all tests
 pytest
@@ -95,8 +96,8 @@ pytest -s
 | `GET /` | Implemented — renders `landing.html` |
 | `GET /register` | Implemented — renders `register.html` |
 | `GET /login` | Implemented — renders `login.html` |
-| `GET /logout` | Stub — Step 3 |
-| `GET /profile` | Stub — Step 4 |
+| `GET /logout` | Implemented — clears session, redirects to `/` |
+| `GET /profile` | Implemented — renders `profile.html` with live DB data |
 | `GET /expenses/add` | Stub — Step 7 |
 | `GET /expenses/<id>/edit` | Stub — Step 8 |
 | `GET /expenses/<id>/delete` | Stub — Step 9 |
@@ -109,9 +110,8 @@ pytest -s
 
 - **Never use raw string returns for stub routes** once a step is implemented — always render a template
 - **Never hardcode URLs** in templates — always use `url_for()`
-- **Never put DB logic in route functions** — it belongs in `database/db.py`
+- **Never put DB logic in route functions** — it belongs in `database/db.py` or `database/queries.py`
 - **Never install new packages** mid-feature without flagging it — keep `requirements.txt` in sync
 - **Never use JS frameworks** — the frontend is intentionally vanilla
-- **`database/db.py` is currently empty** — do not assume helpers exist until the step that implements them
 - **FK enforcement is manual** — SQLite foreign keys are off by default; `get_db()` must run `PRAGMA foreign_keys = ON` on every connection
 - The app runs on **port 8001**, not the FastAPI default 8000 — don't change this

@@ -16,6 +16,12 @@ from database.db import (  # noqa: F401
     seed_db,
     verify_user,
 )
+from database.queries import (
+    get_category_breakdown,
+    get_profile_user,
+    get_recent_transactions,
+    get_summary_stats,
+)
 
 MIN_PASSWORD_LENGTH = 8
 
@@ -156,53 +162,24 @@ def privacy(request: Request):
     return templates.TemplateResponse(request, "privacy.html")
 
 
-# Hardcoded profile data — replaced by real queries in Step 5.
-PROFILE_USER = {
-    "name": "Demo User",
-    "initials": "DU",
-    "email": "demo@expensetrack.com",
-    "member_since": "January 2026",
-}
-
-PROFILE_STATS = {
-    "total_spent": 10600.00,
-    "transaction_count": 8,
-    "top_category": "Food",
-}
-
-PROFILE_TRANSACTIONS = [
-    {"date": "2026-11-12", "description": "Weekly groceries", "category": "Food", "amount": 1850.00},
-    {"date": "2026-11-10", "description": "Electricity bill", "category": "Bills", "amount": 2400.00},
-    {"date": "2026-11-08", "description": "Metro card top-up", "category": "Transport", "amount": 500.00},
-    {"date": "2026-11-07", "description": "Movie tickets", "category": "Entertainment", "amount": 800.00},
-    {"date": "2026-11-05", "description": "Pharmacy", "category": "Health", "amount": 650.00},
-    {"date": "2026-11-04", "description": "New sneakers", "category": "Shopping", "amount": 2200.00},
-    {"date": "2026-11-03", "description": "Dinner out", "category": "Food", "amount": 1200.00},
-    {"date": "2026-11-01", "description": "Cab to airport", "category": "Transport", "amount": 1000.00},
-]
-
-PROFILE_CATEGORY_BREAKDOWN = [
-    {"category": "Food", "total": 3050.00, "percent": 29},
-    {"category": "Bills", "total": 2400.00, "percent": 23},
-    {"category": "Shopping", "total": 2200.00, "percent": 21},
-    {"category": "Transport", "total": 1500.00, "percent": 14},
-    {"category": "Entertainment", "total": 800.00, "percent": 7},
-    {"category": "Health", "total": 650.00, "percent": 6},
-]
-
-
 @app.get("/profile", response_class=HTMLResponse)
 def profile(request: Request):
-    if not get_current_user(request):
+    user = get_current_user(request)
+    if not user:
         return RedirectResponse(request.url_for("login").path, status_code=303)
+    profile_user = get_profile_user(user["id"])
+    if profile_user is None:
+        response = RedirectResponse(request.url_for("login").path, status_code=303)
+        clear_session_cookie(response)
+        return response
     return templates.TemplateResponse(
         request,
         "profile.html",
         {
-            "profile_user": PROFILE_USER,
-            "stats": PROFILE_STATS,
-            "transactions": PROFILE_TRANSACTIONS,
-            "breakdown": PROFILE_CATEGORY_BREAKDOWN,
+            "profile_user": profile_user,
+            "stats": get_summary_stats(user["id"]),
+            "transactions": get_recent_transactions(user["id"]),
+            "breakdown": get_category_breakdown(user["id"]),
         },
     )
 
