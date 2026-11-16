@@ -93,6 +93,17 @@ def seed_db():
         )
 
 
+def create_expense(user_id, amount, category, date, description):
+    """Insert an expense for a user and return the new id."""
+    with closing(get_db()) as conn, conn:
+        cursor = conn.execute(
+            "INSERT INTO expenses (user_id, amount, category, date, description) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (user_id, amount, category, date, description),
+        )
+        return cursor.lastrowid
+
+
 def get_user_by_email(email):
     """Return the user row for an email (case-insensitive), or None."""
     with closing(get_db()) as conn:

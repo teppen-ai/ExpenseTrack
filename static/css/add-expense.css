@@ -1,0 +1,69 @@
+/* Add-expense page styles */
+
+.expense-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+select.form-input {
+    appearance: auto;
+    cursor: pointer;
+}
+
+.expense-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.expense-actions .btn-submit {
+    flex: 1;
+    width: auto;
+}
+
+.expense-cancel {
+    margin-top: 0.5rem;
+    padding: 0.7rem 1rem;
+    font-size: 0.95rem;
+    color: var(--ink-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+.expense-cancel:hover {
+    color: var(--ink);
+    border-color: var(--ink-muted);
+}
+
+@media (max-width: 600px) {
+    .expense-row { grid-template-columns: 1fr; gap: 0; }
+}
+
+/* Large screens (2K and up) — same breakpoint as style.css */
+@media (min-width: 1800px) {
+    .auth-container { max-width: 640px; }
+
+    .auth-title { font-size: 2.4rem; }
+    .auth-subtitle { font-size: 1rem; }
+
+    .auth-card { padding: 2.75rem; }
+
+    .auth-card .form-group { margin-bottom: 1.6rem; }
+    .auth-card .form-group label { font-size: 0.95rem; }
+
+    .auth-card .form-input {
+        padding: 0.85rem 1rem;
+        font-size: 1.05rem;
+    }
+
+    .expense-actions .btn-submit {
+        padding: 0.9rem;
+        font-size: 1.05rem;
+    }
+
+    .expense-cancel {
+        padding: 0.9rem 1.4rem;
+        font-size: 1.05rem;
+    }
+}

@@ -1,5 +1,8 @@
+import re
 import sqlite3
 from contextlib import asynccontextmanager
+from datetime import date
+from decimal import Decimal
 from urllib.parse import parse_qs
 
 from fastapi import FastAPI, Request
@@ -9,6 +12,8 @@ from fastapi.templating import Jinja2Templates
 
 from auth import clear_session_cookie, get_current_user, set_session_cookie
 from database.db import (  # noqa: F401
+    CATEGORIES,
+    create_expense,
     create_user,
     get_db,
     get_user_by_email,
@@ -25,6 +30,8 @@ from database.queries import (
 )
 
 MIN_PASSWORD_LENGTH = 8
+MAX_AMOUNT = Decimal("1000000")
+MAX_DESCRIPTION_LENGTH = 200
 
 
 @asynccontextmanager
@@ -202,9 +209,93 @@ def analytics(request: Request):
 # ------------------------------------------------------------------ #
 
 
-@app.get("/expenses/add", response_class=PlainTextResponse)
-def add_expense():
-    return "Add expense — coming in Step 7"
+def _validate_expense(form):
+    """Return (error, cleaned) for the add-expense form; one is always None."""
+    raw_amount = form.get("amount", "").strip()
+    if not raw_amount:
+        return "Please enter an amount.", None
+    if not re.fullmatch(r"[0-9]+(\.[0-9]+)?", raw_amount):
+        return "Amount must be a valid number.", None
+    amount = Decimal(raw_amount)
+    if amount <= 0:
+        return "Amount must be greater than 0.", None
+    if amount.normalize().as_tuple().exponent < -2:
+        return "Amount can have at most 2 decimal places.", None
+    if amount > MAX_AMOUNT:
+        return "Amount cannot exceed 1,000,000.", None
+
+    category = form.get("category", "")
+    if category not in CATEGORIES:
+        return "Please choose a valid category.", None
+
+    raw_date = form.get("date", "").strip()
+    try:
+        if not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", raw_date):
+            raise ValueError
+        expense_date = date.fromisoformat(raw_date)
+    except ValueError:
+        return "Please enter a valid date.", None
+
+    description = form.get("description", "").strip()
+    if len(description) > MAX_DESCRIPTION_LENGTH:
+        return (
+            f"Description must be at most {MAX_DESCRIPTION_LENGTH} characters.",
+            None,
+        )
+
+    return None, {
+        "amount": float(amount),
+        "category": category,
+        "date": expense_date.isoformat(),
+        "description": description or None,
+    }
+
+
+def _expense_form_response(request, values, error=None, status_code=200):
+    return templates.TemplateResponse(
+        request,
+        "add_expense.html",
+        {"categories": CATEGORIES, "values": values, "error": error},
+        status_code=status_code,
+    )
+
+
+def _login_redirect(request):
+    """Redirect to login, clearing the cookie if it points at a missing user."""
+    response = RedirectResponse(request.url_for("login").path, status_code=303)
+    if request.cookies:
+        clear_session_cookie(response)
+    return response
+
+
+@app.get("/expenses/add", response_class=HTMLResponse)
+def add_expense(request: Request):
+    if not get_current_user(request):
+        return _login_redirect(request)
+    values = {
+        "amount": "",
+        "category": "",
+        "date": date.today().isoformat(),
+        "description": "",
+    }
+    return _expense_form_response(request, values)
+
+
+@app.post("/expenses/add", response_class=HTMLResponse)
+async def add_expense_post(request: Request):
+    user = get_current_user(request)
+    if not user:
+        return _login_redirect(request)
+    raw = (await request.body()).decode("utf-8", errors="replace")
+    data = parse_qs(raw, keep_blank_values=True)
+    form = {key: data.get(key, [""])[0] for key in
+            ("amount", "category", "date", "description")}
+
+    error, cleaned = _validate_expense(form)
+    if error:
+        return _expense_form_response(request, form, error, status_code=400)
+    create_expense(user["id"], **cleaned)
+    return RedirectResponse(request.url_for("profile").path, status_code=303)
 
 
 @app.get("/expenses/{id}/edit", response_class=PlainTextResponse)
