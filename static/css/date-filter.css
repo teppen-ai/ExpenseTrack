@@ -32,13 +32,14 @@
 
 .filter-pill,
 .filter-apply {
-    padding: 0.4rem 1rem;
+    padding: 0.45rem 1.1rem;
     border: none;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-sm);
     background: var(--paper-warm);
     color: var(--ink-soft);
     font-family: var(--font-body);
     font-size: 0.85rem;
+    font-weight: 500;
     line-height: 1.2;
     text-decoration: none;
     cursor: pointer;
@@ -49,16 +50,16 @@
     background: var(--border);
 }
 
+/* Selected pill and Apply match the navbar Sign out button: dark, turning green on hover */
 .filter-pill--active,
 .filter-apply {
-    background: var(--accent);
-    color: var(--paper-card);
+    background: var(--ink);
+    color: var(--paper);
 }
 
 .filter-pill--active:hover,
 .filter-apply:hover {
     background: var(--accent);
-    opacity: 0.9;
 }
 
 .filter-date {

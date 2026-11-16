@@ -190,6 +190,13 @@ def profile(
     )
 
 
+@app.get("/analytics", response_class=HTMLResponse)
+def analytics(request: Request):
+    if not get_current_user(request):
+        return RedirectResponse(request.url_for("login").path, status_code=303)
+    return templates.TemplateResponse(request, "analytics.html")
+
+
 # ------------------------------------------------------------------ #
 # Placeholder routes — students will implement these                  #
 # ------------------------------------------------------------------ #

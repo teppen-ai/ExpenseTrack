@@ -2,10 +2,27 @@
 /* Profile page                                                        */
 /* ------------------------------------------------------------------ */
 
+/* Footer stays at the bottom of the screen; content is centred in the space between navbar and footer,
+   so the gaps above and below it stay equal and grow naturally with more transactions */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 0;
+}
+
 .profile-page {
+    width: 100%;
     max-width: var(--max-width);
     margin: 0 auto;
-    padding: 2.5rem 1.5rem 4rem;
+    padding: 2.5rem 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 2rem;
@@ -277,7 +294,7 @@
 
 @media (max-width: 600px) {
     .profile-page {
-        padding: 1.5rem 1rem 3rem;
+        padding: 1.5rem 1rem;
     }
 
     .profile-card {

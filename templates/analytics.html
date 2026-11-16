@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics — ExpenseTrack{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/analytics.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="analytics-page">
+    <section class="feature-card feature-panel">
+        <div class="feature-line"></div>
+        <div class="feature-ring feature-ring--tl-lg"></div>
+        <div class="feature-ring feature-ring--tl-sm"></div>
+        <div class="feature-ring feature-ring--br"></div>
+
+        <div class="feature-art" aria-hidden="true">
+            <div class="feature-glow"></div>
+            <div class="float-card float-card--left">
+                <div class="mini-bar mini-bar--top"></div>
+                <div class="mini-tile"></div>
+                <div class="mini-bar mini-bar--bottom"></div>
+            </div>
+            <div class="float-card float-card--right">
+                <div class="mini-chart">
+                    <i></i><i></i><i></i>
+                </div>
+                <div class="mini-bar mini-bar--wide"></div>
+            </div>
+            <div class="feature-orb">
+                <svg viewBox="0 0 24 24" class="icon icon--orb" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4L12 3Z" />
+                    <path d="m19 14 .7 2.3L22 17l-2.3.7L19 20l-.7-2.3L16 17l2.3-.7L19 14Z" />
+                </svg>
+            </div>
+            <span class="feature-dot feature-dot--filled"></span>
+            <span class="feature-dot feature-dot--ring"></span>
+        </div>
+
+        <div class="feature-badge">
+            <span class="feature-badge-dot"></span>
+            <span class="feature-badge-text">In development</span>
+        </div>
+
+        <h1 class="feature-title">
+            Something useful<br>
+            <span class="feature-title-accent">is on the way.</span>
+        </h1>
+        <p class="feature-text">
+            We’re putting the finishing touches on this feature. It’ll be available here soon and will
+            work seamlessly with the rest of your account.
+        </p>
+
+        <div class="feature-actions">
+            <a href="{{ url_for('profile') }}" class="primary-action">
+                <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M19 12H5M10 17l-5-5 5-5" />
+                </svg>
+                Back to profile
+            </a>
+        </div>
+
+        <p class="feature-note">Your existing data and settings won’t be affected.</p>
+    </section>
+</div>
+{% endblock %}
