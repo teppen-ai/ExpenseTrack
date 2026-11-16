@@ -57,7 +57,10 @@
 
     <div class="profile-columns">
     <section class="profile-section">
-        <h2 class="profile-heading">{{ "Transactions" if filters.active else "Recent transactions" }}</h2>
+        <div class="profile-heading-row">
+            <h2 class="profile-heading">{{ "Transactions" if filters.active else "Recent transactions" }}</h2>
+            <a href="{{ url_for('add_expense') }}" class="btn-primary">+ Add Expense</a>
+        </div>
         <div class="table-wrap">
             <table class="profile-table">
                 <thead>

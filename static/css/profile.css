@@ -302,3 +302,16 @@ body {
         text-align: center;
     }
 }
+
+/* ---- Heading row with Add Expense button ---- */
+.profile-heading-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.profile-heading-row .profile-heading {
+    margin: 0;
+}
