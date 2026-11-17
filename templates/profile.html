@@ -69,18 +69,20 @@
                         <th scope="col">Description</th>
                         <th scope="col">Category</th>
                         <th scope="col" class="amount">Amount</th>
+                        <th scope="col" class="actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for t in transactions %}
                     <tr>
-                        <td><time datetime="{{ t.date }}">{{ t.date }}</time></td>
-                        <td>{{ t.description or "—" }}</td>
-                        <td><span class="badge badge--{{ t.category|lower }}">{{ t.category }}</span></td>
+                        <td class="t-date"><time datetime="{{ t.date }}">{{ t.date }}</time></td>
+                        <td class="t-desc">{{ t.description or "—" }}</td>
+                        <td class="t-cat"><span class="badge badge--{{ t.category|lower }}">{{ t.category }}</span></td>
                         <td class="amount">₹{{ "{:,.2f}".format(t.amount) }}</td>
+                        <td class="actions"><a class="edit-link" href="{{ url_for('edit_expense', id=t.id) }}">Edit</a></td>
                     </tr>
                     {% else %}
-                    <tr><td colspan="4" class="empty-state">{{ "No transactions in this range." if filters.active else "No transactions yet." }}</td></tr>
+                    <tr><td colspan="5" class="empty-state">{{ "No transactions in this range." if filters.active else "No transactions yet." }}</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

@@ -292,8 +292,8 @@ class TestEscaping:
 
 
 class TestStubsStillRespond:
-    @pytest.mark.parametrize("suffix", ["edit", "delete"])
-    def test_edit_and_delete_stubs_still_respond(self, auth_client, suffix):
+    @pytest.mark.parametrize("suffix", ["delete"])
+    def test_delete_stub_still_responds(self, auth_client, suffix):
         response = auth_client.get(f"/expenses/1/{suffix}")
         assert response.status_code == 200
         assert "coming in Step" in response.text

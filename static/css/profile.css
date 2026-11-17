@@ -144,10 +144,18 @@ body {
 
 .profile-table th,
 .profile-table td {
-    padding: 0.75rem 0.75rem;
+    padding: 0.75rem 0.5rem;
     text-align: left;
     border-bottom: 1px solid var(--border-soft);
     white-space: nowrap;
+}
+
+/* The description is the only column allowed to wrap, so the Amount and
+   Edit columns always stay fully visible instead of scrolling out of view */
+.profile-table .t-desc {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    min-width: 7rem;
 }
 
 .profile-table th {
@@ -165,6 +173,27 @@ body {
 .profile-table .amount {
     text-align: right;
     font-variant-numeric: tabular-nums;
+}
+
+.profile-table .actions {
+    text-align: right;
+}
+
+.edit-link {
+    display: inline-block;
+    padding: 0.3rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+/* Matches the navbar Sign out button: dark, turning green on hover */
+.edit-link:hover {
+    background: var(--accent);
 }
 
 /* ---- Category badges ---- */
@@ -300,6 +329,105 @@ body {
     .profile-card {
         flex-direction: column;
         text-align: center;
+    }
+
+    .profile-section {
+        padding: 1.25rem 1rem;
+    }
+
+    .profile-heading-row .btn-primary {
+        padding: 0.35rem 0.8rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+
+    .profile-heading-row .profile-heading {
+        font-size: 1.1rem;
+    }
+
+    .profile-name {
+        font-size: 1.5rem;
+    }
+
+    .stat-card {
+        padding: 1rem 1.25rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+
+    /* Transactions: each row becomes a stacked card instead of a wide table */
+    .table-wrap {
+        overflow-x: visible;
+    }
+
+    .profile-table,
+    .profile-table tbody {
+        display: block;
+    }
+
+    .profile-table thead {
+        display: none;
+    }
+
+    .profile-table tbody tr {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        grid-template-areas:
+            "desc desc amount"
+            "date cat actions";
+        align-items: center;
+        gap: 0.4rem 0.75rem;
+        padding: 0.85rem 0;
+        border-bottom: 1px solid var(--border-soft);
+    }
+
+    .profile-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .profile-table td {
+        display: block;
+        padding: 0;
+        border-bottom: none;
+        white-space: normal;
+    }
+
+    .profile-table .t-desc {
+        grid-area: desc;
+        color: var(--ink);
+        font-weight: 500;
+        overflow-wrap: anywhere;
+    }
+
+    .profile-table .amount {
+        grid-area: amount;
+        font-weight: 600;
+        color: var(--ink);
+    }
+
+    .profile-table .t-date {
+        font-size: 0.85rem;
+        color: var(--ink-muted);
+    }
+
+    .profile-table .t-date {
+        grid-area: date;
+    }
+
+    .profile-table .t-cat {
+        grid-area: cat;
+        justify-self: start;
+    }
+
+    .profile-table .actions {
+        grid-area: actions;
+    }
+
+    .profile-table .empty-state {
+        grid-column: 1 / -1;
+        padding: 1.5rem 0.5rem;
     }
 }
 
