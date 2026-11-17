@@ -31,8 +31,7 @@ def get_db():
 def init_db():
     """Create all tables if they do not exist. Safe to call repeatedly."""
     with closing(get_db()) as conn, conn:
-        conn.execute(
-            """
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id            INTEGER PRIMARY KEY AUTOINCREMENT,
                 name          TEXT NOT NULL,
@@ -40,10 +39,8 @@ def init_db():
                 password_hash TEXT NOT NULL,
                 created_at    TEXT DEFAULT (datetime('now'))
             )
-            """
-        )
-        conn.execute(
-            """
+            """)
+        conn.execute("""
             CREATE TABLE IF NOT EXISTS expenses (
                 id          INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id     INTEGER NOT NULL,
@@ -54,8 +51,7 @@ def init_db():
                 created_at  TEXT DEFAULT (datetime('now')),
                 FOREIGN KEY (user_id) REFERENCES users (id)
             )
-            """
-        )
+            """)
 
 
 def seed_db():
@@ -86,8 +82,13 @@ def seed_db():
             "INSERT INTO expenses (user_id, amount, category, date, description) "
             "VALUES (?, ?, ?, ?, ?)",
             [
-                (user_id, amount, category,
-                 date(today.year, today.month, day).isoformat(), description)
+                (
+                    user_id,
+                    amount,
+                    category,
+                    date(today.year, today.month, day).isoformat(),
+                    description,
+                )
                 for day, amount, category, description in samples
             ],
         )
@@ -102,6 +103,26 @@ def create_expense(user_id, amount, category, date, description):
             (user_id, amount, category, date, description),
         )
         return cursor.lastrowid
+
+
+def get_expense(expense_id, user_id):
+    """Return the expense row if it exists and belongs to user_id, else None."""
+    with closing(get_db()) as conn:
+        return conn.execute(
+            "SELECT * FROM expenses WHERE id = ? AND user_id = ?",
+            (expense_id, user_id),
+        ).fetchone()
+
+
+def update_expense(expense_id, user_id, amount, category, date, description):
+    """Update an owned expense and return True if a row changed."""
+    with closing(get_db()) as conn, conn:
+        cursor = conn.execute(
+            "UPDATE expenses SET amount = ?, category = ?, date = ?, "
+            "description = ? WHERE id = ? AND user_id = ?",
+            (amount, category, date, description, expense_id, user_id),
+        )
+        return cursor.rowcount > 0
 
 
 def get_user_by_email(email):

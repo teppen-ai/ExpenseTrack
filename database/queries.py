@@ -58,7 +58,8 @@ def get_summary_stats(user_id, start=None, end=None):
             params,
         ).fetchone()
         top = conn.execute(
-            "SELECT category FROM expenses WHERE " + _EXPENSE_FILTER
+            "SELECT category FROM expenses WHERE "
+            + _EXPENSE_FILTER
             + " GROUP BY category ORDER BY SUM(amount) DESC, category ASC LIMIT 1",
             params,
         ).fetchone()
@@ -74,12 +75,14 @@ def get_recent_transactions(user_id, limit=10, *, start=None, end=None):
     params = _filter_params(user_id, start, end)
     with closing(get_db()) as conn:
         rows = conn.execute(
-            "SELECT date, description, category, amount FROM expenses WHERE "
-            + _EXPENSE_FILTER + " ORDER BY date DESC, id DESC LIMIT ?",
+            "SELECT id, date, description, category, amount FROM expenses WHERE "
+            + _EXPENSE_FILTER
+            + " ORDER BY date DESC, id DESC LIMIT ?",
             (*params, int(limit)),
         ).fetchall()
     return [
         {
+            "id": row["id"],
             "date": row["date"],
             "description": row["description"] or "",
             "category": row["category"],
@@ -95,7 +98,8 @@ def get_category_breakdown(user_id, start=None, end=None):
     with closing(get_db()) as conn:
         rows = conn.execute(
             "SELECT category, SUM(amount) AS total FROM expenses WHERE "
-            + _EXPENSE_FILTER + " GROUP BY category "
+            + _EXPENSE_FILTER
+            + " GROUP BY category "
             "ORDER BY total DESC, category ASC",
             params,
         ).fetchall()

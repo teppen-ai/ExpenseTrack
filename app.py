@@ -5,7 +5,7 @@ from datetime import date
 from decimal import Decimal
 from urllib.parse import parse_qs
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -16,9 +16,11 @@ from database.db import (  # noqa: F401
     create_expense,
     create_user,
     get_db,
+    get_expense,
     get_user_by_email,
     init_db,
     seed_db,
+    update_expense,
     verify_user,
 )
 from database.date_range import resolve_date_filter
@@ -46,15 +48,14 @@ app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(
     directory="templates",
-    context_processors=[
-        lambda request: {"current_user": get_current_user(request)}
-    ],
+    context_processors=[lambda request: {"current_user": get_current_user(request)}],
 )
 
 
 # ------------------------------------------------------------------ #
 # Routes                                                              #
 # ------------------------------------------------------------------ #
+
 
 def _redirect_home(request: Request):
     """Send an already-logged-in user to the landing page."""
@@ -171,9 +172,7 @@ def privacy(request: Request):
 
 
 @app.get("/profile", response_class=HTMLResponse)
-def profile(
-    request: Request, start: str | None = None, end: str | None = None
-):
+def profile(request: Request, start: str | None = None, end: str | None = None):
     user = get_current_user(request)
     if not user:
         return RedirectResponse(request.url_for("login").path, status_code=303)
@@ -251,13 +250,51 @@ def _validate_expense(form):
     }
 
 
-def _expense_form_response(request, values, error=None, status_code=200):
+def _expense_form_response(
+    request,
+    values,
+    error=None,
+    status_code=200,
+    *,
+    form_action=None,
+    page_title="Add expense",
+    subtitle="Record a new transaction",
+    submit_label="Add expense",
+):
+    if form_action is None:
+        form_action = request.url_for("add_expense_post").path
     return templates.TemplateResponse(
         request,
         "add_expense.html",
-        {"categories": CATEGORIES, "values": values, "error": error},
+        {
+            "categories": CATEGORIES,
+            "values": values,
+            "error": error,
+            "form_action": form_action,
+            "page_title": page_title,
+            "subtitle": subtitle,
+            "submit_label": submit_label,
+        },
         status_code=status_code,
     )
+
+
+def _edit_form_response(request, expense_id, values, error=None, status_code=200):
+    return _expense_form_response(
+        request,
+        values,
+        error,
+        status_code,
+        form_action=request.url_for("edit_expense_post", id=expense_id).path,
+        page_title="Edit expense",
+        subtitle="Update this transaction",
+        submit_label="Save changes",
+    )
+
+
+def _format_amount(amount):
+    """Format a stored amount for the number input without float noise."""
+    return f"{Decimal(str(amount)):f}"
 
 
 def _login_redirect(request):
@@ -288,8 +325,10 @@ async def add_expense_post(request: Request):
         return _login_redirect(request)
     raw = (await request.body()).decode("utf-8", errors="replace")
     data = parse_qs(raw, keep_blank_values=True)
-    form = {key: data.get(key, [""])[0] for key in
-            ("amount", "category", "date", "description")}
+    form = {
+        key: data.get(key, [""])[0]
+        for key in ("amount", "category", "date", "description")
+    }
 
     error, cleaned = _validate_expense(form)
     if error:
@@ -298,9 +337,43 @@ async def add_expense_post(request: Request):
     return RedirectResponse(request.url_for("profile").path, status_code=303)
 
 
-@app.get("/expenses/{id}/edit", response_class=PlainTextResponse)
-def edit_expense(id: int):
-    return "Edit expense — coming in Step 8"
+@app.get("/expenses/{id}/edit", response_class=HTMLResponse)
+def edit_expense(request: Request, id: int):
+    user = get_current_user(request)
+    if not user:
+        return _login_redirect(request)
+    expense = get_expense(id, user["id"])
+    if expense is None:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    values = {
+        "amount": _format_amount(expense["amount"]),
+        "category": expense["category"],
+        "date": expense["date"],
+        "description": expense["description"] or "",
+    }
+    return _edit_form_response(request, id, values)
+
+
+@app.post("/expenses/{id}/edit", response_class=HTMLResponse)
+async def edit_expense_post(request: Request, id: int):
+    user = get_current_user(request)
+    if not user:
+        return _login_redirect(request)
+    if get_expense(id, user["id"]) is None:
+        raise HTTPException(status_code=404, detail="Expense not found")
+    raw = (await request.body()).decode("utf-8", errors="replace")
+    data = parse_qs(raw, keep_blank_values=True)
+    form = {
+        key: data.get(key, [""])[0]
+        for key in ("amount", "category", "date", "description")
+    }
+
+    error, cleaned = _validate_expense(form)
+    if error:
+        return _edit_form_response(request, id, form, error, status_code=400)
+    if not update_expense(id, user["id"], **cleaned):
+        raise HTTPException(status_code=404, detail="Expense not found")
+    return RedirectResponse(request.url_for("profile").path, status_code=303)
 
 
 @app.get("/expenses/{id}/delete", response_class=PlainTextResponse)

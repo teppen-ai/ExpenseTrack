@@ -18,10 +18,16 @@
                 <span class="brand-icon">◈</span>
                 <span class="brand-name">ExpenseTrack</span>
             </a>
-            <div class="nav-links">
+            <button type="button" class="nav-toggle" id="nav-toggle"
+                    aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+                <span class="nav-toggle-bar"></span>
+            </button>
+            <div class="nav-links" id="nav-links">
                 {% if current_user %}
                 <a href="{{ url_for('analytics') }}" class="nav-analytics{% if request.url.path == url_for('analytics').path %} nav-active{% endif %}">Analytics</a>
-                <a href="{{ url_for('profile') }}" class="nav-user">{{ current_user["name"] }}</a>
+                <a href="{{ url_for('profile') }}" class="nav-analytics{% if request.url.path == url_for('profile').path %} nav-active{% endif %}">Dashboard</a>
                 <a href="{{ url_for('logout') }}" class="nav-cta">Sign out</a>
                 {% else %}
                 <a href="{{ url_for('login') }}">Sign in</a>
@@ -29,6 +35,7 @@
                 {% endif %}
             </div>
         </div>
+        <div class="nav-backdrop" id="nav-backdrop" hidden></div>
     </nav>
 
     <main class="main-content">
