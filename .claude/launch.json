@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ExpenseTrack Dev Server",
+      "runtimeExecutable": "uvicorn",
+      "runtimeArgs": ["app:app", "--reload", "--port", "8001"],
+      "port": 8001
+    }
+  ]
+}
