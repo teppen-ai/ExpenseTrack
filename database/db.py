@@ -125,6 +125,16 @@ def update_expense(expense_id, user_id, amount, category, date, description):
         return cursor.rowcount > 0
 
 
+def delete_expense_by_id(expense_id, user_id):
+    """Delete an owned expense and return True if a row was removed."""
+    with closing(get_db()) as conn, conn:
+        cursor = conn.execute(
+            "DELETE FROM expenses WHERE id = ? AND user_id = ?",
+            (expense_id, user_id),
+        )
+        return cursor.rowcount > 0
+
+
 def get_user_by_email(email):
     """Return the user row for an email (case-insensitive), or None."""
     with closing(get_db()) as conn:

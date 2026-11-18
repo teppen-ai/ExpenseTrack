@@ -435,13 +435,6 @@ class TestAddPageUnchanged:
         ), "Add page must not point at an edit URL"
 
 
-class TestDeleteStub:
-    def test_delete_stub_still_responds(self, auth_client, expense_id):
-        response = auth_client.get(f"/expenses/{expense_id}/delete")
-        assert response.status_code == 200
-        assert "coming in Step" in response.text
-
-
 # --------------------------------------------------------------------------
 # Profile page Edit links
 # --------------------------------------------------------------------------
