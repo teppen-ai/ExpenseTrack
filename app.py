@@ -6,16 +6,16 @@ from decimal import Decimal
 from urllib.parse import parse_qs
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from auth import clear_session_cookie, get_current_user, set_session_cookie
-from database.db import (  # noqa: F401
+from database.db import (
     CATEGORIES,
     create_expense,
     create_user,
-    get_db,
+    delete_expense_by_id,
     get_expense,
     get_user_by_email,
     init_db,
@@ -204,7 +204,7 @@ def analytics(request: Request):
 
 
 # ------------------------------------------------------------------ #
-# Placeholder routes — students will implement these                  #
+# Expenses                                                            #
 # ------------------------------------------------------------------ #
 
 
@@ -376,9 +376,14 @@ async def edit_expense_post(request: Request, id: int):
     return RedirectResponse(request.url_for("profile").path, status_code=303)
 
 
-@app.get("/expenses/{id}/delete", response_class=PlainTextResponse)
-def delete_expense(id: int):
-    return "Delete expense — coming in Step 9"
+@app.post("/expenses/{id}/delete", response_class=HTMLResponse)
+def delete_expense(request: Request, id: int):
+    user = get_current_user(request)
+    if not user:
+        return _login_redirect(request)
+    if not delete_expense_by_id(id, user["id"]):
+        raise HTTPException(status_code=404, detail="Expense not found")
+    return RedirectResponse(request.url_for("profile").path, status_code=303)
 
 
 if __name__ == "__main__":

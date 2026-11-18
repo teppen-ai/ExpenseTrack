@@ -196,6 +196,36 @@ body {
     background: var(--accent);
 }
 
+.row-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.delete-form {
+    margin: 0;
+}
+
+.delete-link {
+    display: inline-block;
+    padding: 0.3rem 0.9rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: inherit;
+    background: var(--danger-light);
+    color: var(--danger);
+    border: 1px solid var(--danger-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.delete-link:hover {
+    background: var(--danger);
+    color: var(--paper);
+}
+
 /* ---- Category badges ---- */
 .badge {
     display: inline-block;

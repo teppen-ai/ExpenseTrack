@@ -284,16 +284,3 @@ class TestEscaping:
         html = auth_client.get(_profile_path(auth_client)).text
         assert payload not in html, "Raw <script> must not appear in profile"
         assert "&lt;script&gt;" in html, "Description should be HTML-escaped"
-
-
-# --------------------------------------------------------------------------
-# Stubs untouched
-# --------------------------------------------------------------------------
-
-
-class TestStubsStillRespond:
-    @pytest.mark.parametrize("suffix", ["delete"])
-    def test_delete_stub_still_responds(self, auth_client, suffix):
-        response = auth_client.get(f"/expenses/1/{suffix}")
-        assert response.status_code == 200
-        assert "coming in Step" in response.text
