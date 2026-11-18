@@ -102,7 +102,7 @@ pytest -s
 | `POST /expenses/add` | Implemented — validates and inserts, redirects to `/profile` |
 | `GET /expenses/<id>/edit` | Implemented — renders `add_expense.html` pre-filled (owner only, 404 otherwise) |
 | `POST /expenses/<id>/edit` | Implemented — validates and updates, redirects to `/profile` |
-| `GET /expenses/<id>/delete` | Stub — Step 9 |
+| `POST /expenses/<id>/delete` | Implemented — deletes owned expense (JS confirm on profile), redirects to `/profile` (404 otherwise) |
 
 **Do not implement a stub route unless the active task explicitly targets that step.**
 
